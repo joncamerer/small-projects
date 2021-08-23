@@ -10,7 +10,7 @@ public class Unscramble {
         this.targets = targets;
     }
 
-    public Map<String, Integer> findTargetOccurrences() {
+    public Map<String, Integer> getTargetOccurrences() {
         Map <String , Integer> results = new HashMap<>();
 
         for (String target : this.targets ) {
@@ -20,19 +20,19 @@ public class Unscramble {
         return results;
     }
 
-    public int wordTimes(String word, String target) {
+    private int wordTimes(String word, String target) {
         Map<Character, Integer> matches = new HashMap<>();
 
         //for each c in target
         for (Character c : target.toCharArray()) {
-            //if word does not contain target
+            //if c does not appear in word
             if (word.indexOf(c) == -1) {
                 return 0;
             } else {
-                //map how many times c appears
+                //map how many times c appears in word
                 int times = charTimes(c, word);
 
-                //if c is a duplicate letter
+                //handle duplicate c
                 if (matches.containsKey(c)) {
                     matches.put(c, matches.get(c) + times);
                 } else {
@@ -41,14 +41,13 @@ public class Unscramble {
             }
         }
 
+        //return smallest value in matches
         int foundTimes = -1;
 
-        //loop through keys in map
         for (Map.Entry<Character, Integer> entry : matches.entrySet()) {
-            //adjust for duplicates
             int timesInTarget = charTimes(entry.getKey(), target);
             int adjustedTimes = (timesInTarget > 1) ? entry.getKey() / timesInTarget :entry.getValue();
-            //return smallest of values
+
             if (foundTimes < 0) {
                 foundTimes = adjustedTimes;
             } else {
@@ -59,7 +58,7 @@ public class Unscramble {
         return foundTimes;
     }
 
-    public int charTimes(char letter, String word) {
+    private int charTimes(char letter, String word) {
         int times = 0;
 
         for (char c : word.toCharArray()) {
@@ -73,13 +72,27 @@ public class Unscramble {
 
     public static void main(String[] args) {
         String word = "onefournine";
+        String word2 = "onethreefoursevennine";
         String[] targets = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
 
         Unscramble unscramble = new Unscramble(word, targets);
-        Map<String, Integer> results = unscramble.findTargetOccurrences();
+        Map<String, Integer> results = unscramble.getTargetOccurrences();
 
-        for (Map.Entry<String, Integer> entry : results.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
+        for (int i = 0; i < targets.length; i++) {
+            int times = results.get(targets[i]);
+
+            for(int k = 0; k < times; k++) {
+                System.out.print(i + 1);
+            }
+        }
+
+        System.out.println();
+        System.out.println();
+        System.out.println("-----------------------");
+        System.out.println();
+
+        for (String target : targets) {
+            System.out.println(target + ": " + results.get(target));
         }
     }
 }
