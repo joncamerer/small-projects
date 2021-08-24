@@ -14,41 +14,53 @@ public class Unscramble {
     public Map<String, Integer> getExactOccurrences() {
         String fullString = getOccurrenceString(this.totalOccurrenceMap);
 
-        //If fullString is an anagram match to scrambleWord
-        if (exactMatchScramble(fullString)) {
+        //If totalOccurrenceMap is already an anagram match to scrambleWord
+        if (exactMatch(fullString, this.scrambledWord)) {
             return this.totalOccurrenceMap;
         }
 
         //Else
+        //Write recursive removeExtras method?
+
         //create new map to return
-        Map<String, Integer> newMap = Map.copyOf(this.totalOccurrenceMap);
+        Map<String, Integer> newMap = this.totalOccurrenceMap;
 
         //get difference between strings
+        String extras = getExtraChars(this.scrambledWord, getOccurrenceString(newMap));
+
+        //Map extras to target words
+        Map<String, Integer> extrasMap = generateTotalOccurrences(extras, this.targets);
+        String extrasString = getOccurrenceString(extrasMap);
+
+        //If extrasOccurrenceMap is not complete
+        if (!exactMatch(extras, extrasString)) {
+            //remove extras from extrasOccurrenceMap ...
+            System.out.println("not a match");
+        }
+
+        //Remove extras
+        for (String target : this.targets) {
+            newMap.put(target, newMap.get(target) - extrasMap.get(target));
+        }
+
+        System.out.println("Extras: " + extrasString);
+
+        for (String target : this.targets) {
+            System.out.println(target + ": " + extrasMap.get(target));
+        }
 
         return newMap;
     }
 
-    public String getExtraChars() {
-        String fullString = getOccurrenceString(this.totalOccurrenceMap);
+    //Helper Methods
 
-        char[] wordArr = this.scrambledWord.toCharArray();
+    private Map<String , Integer> removeExtras(String withExtras, String target) {
+        Map<String, Integer> newMap = new HashMap<>();
 
-        for (char letter : wordArr) {
-            if (fullString.indexOf(letter) != -1) {
-                int index = fullString.indexOf(letter);
-
-                if (index == 0) {
-                    fullString = fullString.substring(1);
-                } else {
-                    fullString = fullString.substring(0, index) + fullString.substring(index + 1);
-                }
-            }
-        }
-
-        return fullString;
+        return newMap;
     }
 
-    public Map<String, Integer> generateTotalOccurrences(String scrambledWord, String[] targets) {
+    private Map<String, Integer> generateTotalOccurrences(String scrambledWord, String[] targets) {
         Map <String , Integer> results = new HashMap<>();
 
         for (String target : targets ) {
@@ -58,11 +70,7 @@ public class Unscramble {
         return results;
     }
 
-    public Map<String, Integer> getTotalOccurrenceMap() {
-        return totalOccurrenceMap;
-    }
-
-    public String getOccurrenceString(Map<String, Integer> occurrences) {
+    private String getOccurrenceString(Map<String, Integer> occurrences) {
         String fullString = "";
 
         for (int i = 0; i < this.targets.length; i++) {
@@ -129,15 +137,33 @@ public class Unscramble {
         return times;
     }
 
-    private boolean exactMatchScramble(String fullString) {
-        if (fullString.length() == this.scrambledWord.length()) {
-            char[] scrambledWordArr = this.scrambledWord.toCharArray();
-            char[] fullStringArr = fullString.toCharArray();
+    private String getExtraChars(String shortString, String longString) {
+        char[] wordArr = shortString.toCharArray();
 
-            Arrays.sort(scrambledWordArr);
-            Arrays.sort(fullStringArr);
+        for (char letter : wordArr) {
+            if (longString.indexOf(letter) != -1) {
+                int index = longString.indexOf(letter);
 
-            return (String.valueOf(scrambledWordArr).equals(String.valueOf(fullStringArr)));
+                if (index == 0) {
+                    longString = longString.substring(1);
+                } else {
+                    longString = longString.substring(0, index) + longString.substring(index + 1);
+                }
+            }
+        }
+
+        return longString;
+    }
+
+    private boolean exactMatch(String firstString, String secondString) {
+        if (firstString.length() == secondString.length()) {
+            char[] firstStringArr = firstString.toCharArray();
+            char[] secondStringArr = secondString.toCharArray();
+
+            Arrays.sort(firstStringArr);
+            Arrays.sort(secondStringArr);
+
+            return (String.valueOf(firstStringArr).equals(String.valueOf(secondStringArr)));
         }
 
         return false;
@@ -153,7 +179,6 @@ public class Unscramble {
 
         System.out.println();
         System.out.println(word2);
-        System.out.println("Extras: " + unscramble.getExtraChars());
         System.out.println();
 
         //Numberify Map
