@@ -14,26 +14,24 @@ public class Unscramble {
     }
 
     public String chaseSolution() {
-        String text = "\n****UNSCRAMBLE****" +
-                "\n-----------------------" +
-                "\nInitial string: " + this.scrambledWord +
-                "\nAs a number: " + mapToNumber(this.uniqueOccurrenceMap) +
-                "\n-----------------------";
 
-        return text;
+        return "\n****UNSCRAMBLE****" +
+                "\n------------------" +
+                "\nInitial string: " + this.scrambledWord +
+                "\nAs a number: " + mapToNumber(this.uniqueOccurrenceMap);
     }
 
     public String uniqueOccurrencesToString() {
-        String text = "****Printed results map:****" +
-                "\n-----------------------";
+        StringBuilder text = new StringBuilder("""
+                
+                ****Unique occurrences****
+                --------------------------""");
 
         for (String target : this.targets) {
-            text += "\n" + target + ": " + this.uniqueOccurrenceMap.get(target);
+            text.append("\n").append(target).append(": ").append(this.uniqueOccurrenceMap.get(target));
         }
 
-        text += "\n-----------------------";
-
-        return text;
+        return text.toString();
     }
 
     //Helper Methods
@@ -50,10 +48,9 @@ public class Unscramble {
     }
 
     private Map<String , Integer> removeExtras(Map<String, Integer> mapWithExtras, String target) {
-        Map<String, Integer> newMap = mapWithExtras;
 
         //Get string of difference between target and fullString of mapWithExtras
-        String extras = getExtraChars(target, getOccurrenceString(newMap));
+        String extras = getExtraChars(target, getOccurrenceString(mapWithExtras));
 
         //Map extras to target words
         Map<String, Integer> extrasMap = generateTotalOccurrences(extras, this.targets);
@@ -62,15 +59,15 @@ public class Unscramble {
         //If fullString of extrasMap is not an anagram match to extras
         if (!exactMatch(extras, extrasString)) {
             //remove extras from extrasMap ...
-            extrasMap = removeExtras(extrasMap, extras);
+            removeExtras(extrasMap, extras);
         }
 
         //Remove extrasMap from newMap
         for (String t : this.targets) {
-            newMap.put(t, newMap.get(t) - extrasMap.get(t));
+            mapWithExtras.put(t, mapWithExtras.get(t) - extrasMap.get(t));
         }
 
-        return newMap;
+        return mapWithExtras;
     }
 
     private Map<String, Integer> generateTotalOccurrences(String scrambledWord, String[] targets) {
@@ -172,31 +169,27 @@ public class Unscramble {
     }
 
     private String getOccurrenceString(Map<String, Integer> occurrences) {
-        String fullString = "";
+        StringBuilder fullString = new StringBuilder();
 
         for (String target : this.targets) {
             int times = occurrences.get(target);
 
-            for (int k = 0; k < times; k++) {
-                fullString += target;
-            }
+            fullString.append(String.valueOf(target).repeat(times));
         }
 
-        return fullString;
+        return fullString.toString();
     }
 
     private String mapToNumber(Map<String, Integer> map) {
-        String number = "";
+        StringBuilder number = new StringBuilder();
 
         for (int i = 0; i < this.targets.length; i++) {
             int times = map.get(this.targets[i]);
 
-            for(int k = 0; k < times; k++) {
-                number += i;
-            }
+            number.append(String.valueOf(i).repeat(times));
         }
 
-        return number;
+        return number.toString();
     }
 
     public static void main(String[] args) {
@@ -209,6 +202,7 @@ public class Unscramble {
 
         System.out.println(unscrambleWord.chaseSolution());
         System.out.println(unscrambleBig.chaseSolution());
+        System.out.println(unscrambleBig.uniqueOccurrencesToString());
     }
 }
 
