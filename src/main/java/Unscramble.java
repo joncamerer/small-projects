@@ -4,31 +4,31 @@ public class Unscramble {
     private String scrambledWord;
     private String[] targets;
     private Map<String, Integer> totalOccurrenceMap;
-    private Map<String, Integer> uniqueOccurrences;
+    private Map<String, Integer> uniqueOccurrenceMap;
 
     public Unscramble(String scrambledWord, String[] targets) {
         this.scrambledWord = scrambledWord;
         this.targets = targets;
         this.totalOccurrenceMap = generateTotalOccurrences(this.scrambledWord, this.targets);
-        this.uniqueOccurrences = getExactOccurrences(this.totalOccurrenceMap);
+        this.uniqueOccurrenceMap = generateUniqueOccurrences(this.totalOccurrenceMap);
     }
 
     public String chaseSolution() {
-        String text = "****UNSCRAMBLE****" +
-                      "\n-----------------------" +
-                      "\nInitial string: " + this.scrambledWord +
-                      "\nAs an int: " + mapToInt(this.uniqueOccurrences) +
-                      "\n-----------------------";
+        String text = "\n****UNSCRAMBLE****" +
+                "\n-----------------------" +
+                "\nInitial string: " + this.scrambledWord +
+                "\nAs a number: " + mapToNumber(this.uniqueOccurrenceMap) +
+                "\n-----------------------";
 
         return text;
     }
 
     public String uniqueOccurrencesToString() {
         String text = "****Printed results map:****" +
-                      "\n-----------------------";
+                "\n-----------------------";
 
         for (String target : this.targets) {
-            text += "\n" + target + ": " + this.uniqueOccurrences.get(target);
+            text += "\n" + target + ": " + this.uniqueOccurrenceMap.get(target);
         }
 
         text += "\n-----------------------";
@@ -38,10 +38,10 @@ public class Unscramble {
 
     //Helper Methods
 
-    private Map<String, Integer> getExactOccurrences(Map<String , Integer> totalOccurrences) {
+    private Map<String, Integer> generateUniqueOccurrences(Map<String , Integer> totalOccurrences) {
         String fullString = getOccurrenceString(totalOccurrences);
 
-        //If totalOccurrenceMap is already an anagram match to scrambleWord
+        //If fullString of totalOccurrences is already an anagram match to scrambleWord
         if (exactMatch(fullString, this.scrambledWord)) {
             return totalOccurrences;
         }
@@ -52,14 +52,14 @@ public class Unscramble {
     private Map<String , Integer> removeExtras(Map<String, Integer> mapWithExtras, String target) {
         Map<String, Integer> newMap = mapWithExtras;
 
-        //get difference between target and occurrence string
+        //Get string of difference between target and fullString of mapWithExtras
         String extras = getExtraChars(target, getOccurrenceString(newMap));
 
         //Map extras to target words
         Map<String, Integer> extrasMap = generateTotalOccurrences(extras, this.targets);
         String extrasString = getOccurrenceString(extrasMap);
 
-        //If extrasMap is not an anagram match to extras
+        //If fullString of extrasMap is not an anagram match to extras
         if (!exactMatch(extras, extrasString)) {
             //remove extras from extrasMap ...
             extrasMap = removeExtras(extrasMap, extras);
@@ -83,59 +83,48 @@ public class Unscramble {
         return results;
     }
 
-    private String getOccurrenceString(Map<String, Integer> occurrences) {
-        String fullString = "";
-
-        for (int i = 0; i < this.targets.length; i++) {
-            int times = occurrences.get(this.targets[i]);
-
-            for(int k = 0; k < times; k++) {
-                fullString += this.targets[i];
-            }
-        }
-
-        return fullString;
-    }
-
     private int wordTimes(String word, String target) {
-        Map<Character, Integer> matches = new HashMap<>();
-        List<Pair> pairs = new ArrayList<>();
+        List<Pair> occurrencePairs = new ArrayList<>();
 
-        //for each c in target
         for (Character c : target.toCharArray()) {
-            //if c does not appear in word or appears too few times
-            if (word.indexOf(c) == -1 || charTimes(c, target) > charTimes(c, word)) {
+            //if c does not appear in word or appears fewer times in word than target
+            if (word.indexOf(c) == -1 ||  charTimes(c, word) < charTimes(c, target)) {
                 return 0;
             } else {
                 //Create Pair for c and times it appears in word
                 int times = charTimes(c, word);
-
                 Pair pair = new Pair(c, times);
-                pairs.add(pair);
+
+                occurrencePairs.add(pair);
             }
         }
 
-        //Adjust for duplicate letter in target
-        for (Pair pair : pairs) {
+        return findLowestTime(adjustDuplicates(occurrencePairs, target));
+    }
+
+    private List<Pair> adjustDuplicates(List<Pair> occurrencePairs, String target) {
+        for (Pair pair : occurrencePairs) {
             int timesInTarget = charTimes(pair.getLetter(), target);
 
             if (timesInTarget > 1) {
                 pair.setTimes(pair.getTimes() / timesInTarget);
             }
         }
+        return occurrencePairs;
+    }
 
-        //return smallest value in matches
-        int pairFoundTimes = -1;
+    private int findLowestTime(List<Pair> occurrencePairs) {
+        int lowestTime = -1;
 
-        for (Pair pair : pairs) {
-            if (pairFoundTimes < 0) {
-                pairFoundTimes = pair.getTimes();
+        for (Pair pair : occurrencePairs) {
+            if (lowestTime < 0) {
+                lowestTime = pair.getTimes();
             } else {
-                pairFoundTimes = Math.min(pair.getTimes(), pairFoundTimes);
+                lowestTime = Math.min(pair.getTimes(), lowestTime);
             }
         }
 
-        return pairFoundTimes;
+        return lowestTime;
     }
 
     private int charTimes(char letter, String word) {
@@ -182,28 +171,44 @@ public class Unscramble {
         return false;
     }
 
-    private int mapToInt(Map<String, Integer> map) {
+    private String getOccurrenceString(Map<String, Integer> occurrences) {
+        String fullString = "";
+
+        for (String target : this.targets) {
+            int times = occurrences.get(target);
+
+            for (int k = 0; k < times; k++) {
+                fullString += target;
+            }
+        }
+
+        return fullString;
+    }
+
+    private String mapToNumber(Map<String, Integer> map) {
         String number = "";
 
         for (int i = 0; i < this.targets.length; i++) {
             int times = map.get(this.targets[i]);
 
             for(int k = 0; k < times; k++) {
-                number += i + 1;
+                number += i;
             }
         }
 
-        return Integer.parseInt(number);
+        return number;
     }
 
     public static void main(String[] args) {
-        String word = "neotowtehrefurofivveseeneightnineofurneo";
-        String[] targets = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
-        Unscramble unscramble = new Unscramble(word, targets);
+        String word = "onenruofine";
+        String bigWord = "zerneninthgiethgiethgienevesnevesxisevifruofruofruofruofeerhteerhteerhteerhteerhtowtowtenoenoenoorezoine";
+        String[] targets = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
 
-        System.out.println(unscramble.chaseSolution());
-        System.out.println();
-        System.out.println(unscramble.uniqueOccurrencesToString());
+        Unscramble unscrambleWord = new Unscramble(word, targets);
+        Unscramble unscrambleBig = new Unscramble(bigWord, targets);
+
+        System.out.println(unscrambleWord.chaseSolution());
+        System.out.println(unscrambleBig.chaseSolution());
     }
 }
 
