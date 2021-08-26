@@ -36,7 +36,7 @@ public class Unscramble {
 
     //Helper Methods
 
-    private Map<String, Integer> generateUniqueOccurrences(Map<String , Integer> totalOccurrences) {
+    private Map<String, Integer> generateUniqueOccurrences(Map<String, Integer> totalOccurrences) {
         String fullString = getOccurrenceString(totalOccurrences);
 
         //If fullString of totalOccurrences is already an anagram match to scrambleWord
@@ -47,9 +47,9 @@ public class Unscramble {
         return removeExtras(totalOccurrences, this.scrambledWord);
     }
 
-    private Map<String , Integer> removeExtras(Map<String, Integer> mapWithExtras, String target) {
+    private Map<String, Integer> removeExtras(Map<String, Integer> mapWithExtras, String target) {
 
-        //Get string of difference between target and fullString of mapWithExtras
+        //Get string of difference between target and occurrence String of mapWithExtras
         String extras = getExtraChars(target, getOccurrenceString(mapWithExtras));
 
         //Map extras to target words
@@ -96,7 +96,7 @@ public class Unscramble {
             }
         }
 
-        return findLowestTime(adjustDuplicates(occurrencePairs, target));
+        return findLeastUse(adjustDuplicates(occurrencePairs, target));
     }
 
     private List<Pair> adjustDuplicates(List<Pair> occurrencePairs, String target) {
@@ -110,7 +110,7 @@ public class Unscramble {
         return occurrencePairs;
     }
 
-    private int findLowestTime(List<Pair> occurrencePairs) {
+    private int findLeastUse(List<Pair> occurrencePairs) {
         int lowestTime = -1;
 
         for (Pair pair : occurrencePairs) {
